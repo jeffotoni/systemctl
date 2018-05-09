@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# Exemplo de script para inicializar no boot do linux
+# Usando Systemctl 
+# Este script tem que está em: /etc/init.d
+# 
+# @package     script-exemplo
+# @author      @jeffotoni
+# @size        05/2018
+
+
+### BEGIN INIT INFO
+# Provides:          sendemailredis
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start daemon at boot time
+# Description:       Enable service provided by daemon.
+### END INIT INFO
+
+echo "#######################"
+echo "    SendEmailRedis     "
+echo "#######################"
+
+#test -x /golang/sendemailredis ||  exit 0
+#. /lib/lsb/init-functions
+
+d_start () 
+{ 
+    echo  "sendemailredis: starting service" 
+    #cd /golang/
+    #sendemailredis > /tmp/sendemailredis.log 2>&1 &
+    sendemailredis > /tmp/sendemailredis.log &
+    sleep  1
+    echo "Executando sendemailredis sucesso"
+    #sleep 1
+    # listando os ID PROCESSO - PID
+    #ps aux | grep SendEmailRedis | awk '{print $2}'
+}
+
+d_stop ()  
+{ 
+    echo  "SendEmailRedis: stopping Service (PID=$(ps aux | grep sendemailredis | awk '{print $2}'))"
+    killall -9 sendemailredis
+    #pkill -f sendemailredis
+ }
+
+ d_status ()
+ { 
+    ps  -ef  |  grep sendemailredis | grep  -v  grep
+    #echo  "PID indicate indication file" 
+}
+
+# Management instructions of the service 
+case  "$1"  in 
+        start)
+            d_start
+            ;; 
+
+        stop)
+            d_stop
+            ;;
+
+        reload)
+            d_stop
+            sleep 1    
+            d_start
+            ;;
+
+        status)
+            d_status
+            ;;
+            
+        *)
+        echo  "Usage: $0 {start|stop|reload|status}" 
+        exit 1 
+        ;; 
+esac
+
