@@ -1,5 +1,5 @@
 # systemctl
-criando um script para iniciar em linux usando systemctl.
+Criando um script para iniciar em linux usando systemctl.
 
 Existem formas diferentes conforme o sistema de inicialização em um sistema linux pode ser utilizado: Systemd ou System V (ou Sysvinit). Uma variação. Uma das principais razões para o Debian mudar do SysV para o systemd é a popularização de computadores com mais de um núcleo, de modo aproveitar melhor o paralelismo do que a tentativa realizada pelo Upstart (da Canonical, que mantém o Ubuntu).
 
@@ -11,6 +11,8 @@ Embora existam opiniões consideráveis ​​sobre se o systemd é uma melhoria
 Neste guia, discutiremos o comando systemctl, que é a ferramenta central de gerenciamento para controlar o sistema init. Abordaremos como gerenciar serviços, verificar status, alterar estados do sistema e trabalhar com os arquivos de configuração.
 
 Observe que, embora o systemd tenha se tornado o sistema init padrão para muitas distribuições do Linux, ele não é implementado universalmente em todas as distribuições. Conforme você passa por este tutorial, se o seu terminal gerar a mensagem de erro bash: systemctl não está instalado, é provável que sua máquina tenha um sistema init diferente instalado.
+
+Para mais informações pode visitar o site [debina/LSBInitScripts](https://wiki.debian.org/LSBInitScripts).
 
 ### Alguns comandos do systemctl
 
@@ -89,7 +91,7 @@ Para verificar o status de um serviço no seu sistema, você pode usar o comando
 
 ```sh
 
-systemctl status application.service
+$ sudo systemctl status application.service
 
 ```
 Isso fornecerá o estado do serviço, a hierarquia do cgroup e as primeiras linhas de log.
@@ -127,9 +129,61 @@ Existem também métodos para verificar estados específicos. Por exemplo, para 
 
 ```sh
 
-systemctl is-active application.service
+$ sudo systemctl is-active application.service
 
 ```
 
-Isso retornará o estado atual da unidade, que geralmente está ativo ou inativo. O código de saída será "0" se estiver ativo, tornando o resultado mais simples de analisar programaticamente.
-Para ver se a unidade está ativada, você pode usar o comando ativado:
+Isso retornará o estado atual da unidade, que geralmente está ativo ou inativo. O código de saída será "activating" se estiver ativo.
+Para ver se a unidade está ativada, você pode usar o comando is-enabled:
+
+```sh
+
+$ sudo systemctl is-enabled application.service
+
+```
+ O código de saída será "enabled" se o application estiver habilitado.
+
+Temos também o is-failed retornará "activating" se estiver funcionando corretamente ou "inactive" se ocorrer um erro. Se a unidade foi parada intencionalmente, ela pode retornar unknown ou inactive. Um status de saída "0" indica que ocorreu uma falha e um status de saída "1" indica qualquer outro status.
+
+```sh
+ 
+ $ sudo systemctl is-failed application.service
+
+ ```
+
+
+### Listando Unidades do systemctl
+
+Para ver uma lista de todas as unidades ativas que o systemd conhece, podemos usar o comando list-units:
+
+```sh
+
+$ sudo systemctl list-units
+
+```
+
+Você pode usar outros sinalizadores para filtrar esses resultados. Por exemplo, podemos usar o sinalizador --state = para indicar os estados LOAD, ACTIVE ou SUB que desejamos visualizar. Você terá que manter o sinalizador --all para que systemctl permita que unidades não ativas sejam exibidas:
+
+```sh
+
+$ sudo systemctl list-units --all --state=inactive
+
+```
+
+Outro filtro comum é o --type=filter. Podemos dizer ao systemctl para exibir apenas unidades do tipo em que estamos interessados. Por exemplo, para ver apenas unidades de serviço ativas, podemos usar:
+
+```sh
+
+$ sudo systemctl list-units --type=service
+
+```
+
+### Listando todos os arquivos da unidade
+
+O comando list-units exibe apenas as unidades que o systemd tentou analisar e carregar na memória. Como o systemd só irá ler as unidades que julgar necessárias, isso não incluirá necessariamente todas as unidades disponíveis no sistema. Para ver todos os arquivos de unidade disponíveis dentro dos caminhos do systemd, incluindo aqueles que o systemd não tentou carregar, você pode usar o comando list-unit-files em vez disso:
+
+```sh
+
+$ sudo systemctl list-unit-files
+
+```
