@@ -1,5 +1,6 @@
 # systemctl
-Criando um script para iniciar em linux usando systemctl.
+
+Criando um script de inicialização em linux usando systemctl.
 
 Existem formas diferentes conforme o sistema de inicialização em um sistema linux pode ser utilizado: Systemd ou System V (ou Sysvinit). Uma variação. Uma das principais razões para o Debian mudar do SysV para o systemd é a popularização de computadores com mais de um núcleo, de modo aproveitar melhor o paralelismo do que a tentativa realizada pelo Upstart (da Canonical, que mantém o Ubuntu).
 
@@ -187,3 +188,75 @@ O comando list-units exibe apenas as unidades que o systemd tentou analisar e ca
 $ sudo systemctl list-unit-files
 
 ```
+### Criando e organizando nossos scripts e Daemon.
+
+#### Programa 1 / Será um script bash
+
+O arquivo do exemplo a seguir deve ser colocado dentro de **/etc/init.d/**.
+
+Temos que criar nosso script para controlar todas as etapas de **start|stop|restart|reload|status** do nosso programa que será executado, iremos chama-lo de httphello.sh que irá ser responsável por gerenciar nosso executável que irá ser inicializado no boot do sistema. Para ficar mais bacana iremos renomer **httphello.sh** para **httphello**
+
+#### httphello.sh
+
+Vamos criar nosso script para start|stop|restart|reload|status em nosso Daemon
+
+```sh
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          httphello
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start daemon at boot time
+# Description:       Enable service provided by daemon.
+### END INIT INFO
+```
+
+#### Programa 2 / Será um script bash service
+
+O arquivo do exemplo a seguir deve ser colocado dentro de **/etc/systemd/system/** (preferencialmente) ou **/usr/lib/systemd/system/** e ter a extensão .service, com o seguinte formato:
+
+```sh
+
+[Unit]
+# nome do servico
+Description=httphello
+
+#Serviço 
+After=multi-user.target
+
+[Service]
+Type=forking
+PIDFile=/var/run/httphello.pid
+#Type=simple
+ExecStart=/etc/init.d/httphello start
+User=root
+WorkingDirectory=/etc/init.d
+#Restart=no
+Restart=always
+RestartSec=1s
+StandardOutput=syslog
+StandardError=inherit
+ExecStop=/bin/kill -TERM $MAINPID
+
+[Install]
+WantedBy=multi-user.target
+
+```
+
+
+#### Programa 3 / Será nosso Daemon
+
+Nosso segundo programa é o Daemon, será responsável por ficar escutando em uma porta 8080 e receberá uma solicitação POST como exemplo abaixo:
+
+```sh
+
+$ curl -vX POST \
+	localhost:9999/hello \
+	-d "name=jefferson"
+
+```
+
+Utilizamos a linguagem Go, é o httphello.go, iremos compilado e ele será nosso Daemon.
