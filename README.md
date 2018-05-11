@@ -498,8 +498,104 @@ O serviço de agendamento de tarefas do Linux também pode ser usado para inicia
 
 Através do comando “crontab -e” conseguiremos editar nosso crontab.
 
+Toda vez que inicializarmos a máquina ele irá executar nossa Api que irá ser nosso Daemon.
+
 ```sh
 
-@reboot cd /usr/bin/ && httphello > /tmp/httphello.log 2>&1
+@reboot /usr/bin/httphello > /tmp/httphello.log 2>&1
+
+```
+
+Neste cenário usando crontab podemos criar um script para fazer o start e stop de nosso Daemon, ao invés de chama-lo diretamente como fizemos acima.
+
+Nosso crontab então ficaria assim:
+
+```sh
+
+@reboot /etc/init.d/cron-httphello.sh start
+
+```
+
+Fizemos algumas modificações em nosso script a principal delas é que não iremos utilizar as funções lsb para executar as operações. **. /lib/lsb/init-functions** removemos.
+
+Nossas funções de start, stop e status foram todas modificadas, conforme o código abaixo:
+
+
+```sh
+
+#!/bin/bash
+# @autor jeff.otoni@gmail.com
+# @date  05/2018
+# Script Exemplo para iniciar nosso Daemon
+
+echo "#######################"
+echo "    cron-httphello     "
+echo "#######################"
+
+# Process name ( For display )
+NAME=httphello
+
+# Daemon name, where is the actual executable
+DAEMON=/usr/bin/httphello
+# pid file for the daemon
+PIDFILE=/var/run/httphello.pid
+
+# If the daemon is not there, then exit.
+test -x $DAEMON || exit 5
+
+# start
+d_start () 
+{ 
+
+    echo  "cron-httphello: starting service" 
+    cd /usr/bin
+    httphello > /tmp/cron-httphello.log &
+    sleep  1
+    echo "Executando cron-httphello sucesso"
+}
+
+# stop
+d_stop ()  
+{ 
+    echo  "httphello: stopping Service (PID=$(ps aux | grep httphello | awk '{print $2}'))"
+    killall -9 httphello
+ }
+
+# status
+d_status ()
+ {
+    ps  -ef  |  grep httphello | grep  -v  grep
+    #echo  "PID indicate indication file" 
+}
+
+# restart
+d_restart ()
+{
+  # Restart the daemon.
+  $0 stop && sleep 2 && $0 start
+}
+
+# Management instructions of the service 
+case  "$1"  in 
+        start)
+            d_start
+            ;; 
+
+        stop)
+            d_stop
+            ;;
+
+        restart)
+            d_restart
+            ;;
+        status)
+            d_status
+            ;;
+            
+        *)
+        echo  "Usage: $0 {start|stop|restart|status}" 
+        exit 1 
+        ;; 
+esac
 
 ```
