@@ -463,6 +463,19 @@ Nosso terceiro programa é o Daemon, será responsável por ficar escutando em u
 
 O httphello.go é nosso Daemon, iremos compilar e disponibilizar como um serviço, toda vez que iniciarmos nosso sistema operacional ele será iniciado e mantido como serviço pelo Linux.
 
+O Go tem que está instalado em sua máquina caso contrário visite este link [golang download](https://golang.org/dl/)
+
+Para compilar nosso exemplo basta rodar o comando:
+
+```go
+
+$ go build -o httphello httphello.go
+
+$ sudo cp httphello /usr/bin
+
+```
+
+### Nosso Daemond em Go
 
 ```go
 
@@ -482,6 +495,7 @@ func main() {
 }
 
 ```
+
 ### Um Client para testar nosso serviço
 
 ```sh
@@ -489,6 +503,13 @@ func main() {
 $ curl -vX POST \
 	localhost:9999/hello \
 	-d "name=jefferson"
+
+```
+
+```sh
+
+$ curl -vX GET \
+	localhost:9999/hello
 
 ```
 
@@ -599,3 +620,16 @@ case  "$1"  in
 esac
 
 ```
+
+## Como ficou os passos
+
+Usando o padrão Lsb para rodarmos com systemctl foi desenvolvido um script para rodar com as funções lsb para executar as operações nativas do systemctl com a lib **. /lib/lsb/init-functions**, ou seja:
+
+ - Copiamos nosso script httphello.sh para **/etc/init.d/**
+ 
+ - Copiamos também nosso script httphello.service para **/etc/systemd/system** (preferencialmente) ou **/usr/lib/systemd/system/**
+
+ - Copiamos nosso Daemon compilado httphello para **/usr/bin**
+
+ E agora é inicializar a máquina para vermos o que acontece.
+

@@ -1,0 +1,69 @@
+#!/bin/bash
+# Exemplo de script para inicializar no boot do linux
+# Usando Systemctl 
+# Este script tem que está em: 
+# /etc/systemd/system (preferencialmente) ou /usr/lib/systemd/system/ 
+# e ter a extensão .service
+
+# @package     httphello
+# @author      @jeffotoni
+# @size        05/2018
+
+[Unit]
+# nome do servico
+Description=httphello
+
+#Serviço 
+After=multi-user.target
+
+[Service]
+
+# Se for apenas um processo 
+# use Type simple; 
+# caso ele gere subprocessos 
+# use forking
+Type=forking
+
+# Caso use forking, 
+# convém guardar o número pid 
+# do processo pai para o systemd 
+# fazer o monitoramento
+PIDFile=/var/run/httphello.pid
+
+# inicia o processo aqui
+# (caso use forking) 
+ExecStart=/etc/init.d/httphello start
+
+# usuario
+# que irá
+# executar
+User=root
+
+# diretorio 
+WorkingDirectory=/etc/init.d
+
+#Restart=no
+Restart=always
+
+# tempo para
+# restart do 
+# serviço
+RestartSec=1s
+
+# mantendo os logs no 
+# syslog
+StandardOutput=syslog
+
+# logs de errros
+StandardError=inherit
+
+# Comando que para o serviço 
+# (o próprio Systemd 
+# se encarrega de acompanhar 
+# o PID do serviço)
+ExecStop=/bin/kill -TERM $MAINPID
+
+[Install]
+
+#Necessário para instalação do serviço
+WantedBy=multi-user.target
