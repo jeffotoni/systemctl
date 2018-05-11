@@ -621,7 +621,7 @@ esac
 
 ```
 
-## Como ficou os passos
+## Como ficou os passos no padrão Lsb
 
 Usando o padrão Lsb para rodarmos com systemctl foi desenvolvido um script para rodar com as funções lsb para executar as operações nativas do systemctl com a lib **. /lib/lsb/init-functions**, ou seja:
 
@@ -660,5 +660,45 @@ Uma outra forma de visualizar o processo rodando é o noss velho e amigo **ps**
 ```sh
 
 $ ps aux | grep httphello
+
+```
+
+## Como ficou os passos utilizando crontab
+
+Usando o crontab não tem muito segredo não, iremos editar nosso arquivo crontab com o comando **crontab -e** e adicionar a linha do nosso script.
+
+```sh
+
+@reboot /etc/init.d/cron-httphello.sh start
+
+```
+
+ - Copiamos nosso script cron-httphello.sh para **/etc/init.d/**
+
+ - Copiamos nosso Daemon compilado **httphello** para **/usr/bin**
+
+E agora é inicializar a máquina e conferir se o serviço está rodando.
+
+Conferindo o serviço:
+
+```sh
+
+$ sh /etc/init.d/cron-httphello.sh status
+
+```
+
+Parando o serviço:
+
+```sh
+
+$ sh /etc/init.d/cron-httphello.sh stop
+
+```
+
+Iniciando o serviço:
+
+```sh
+
+$ sh /etc/init.d/cron-httphello.sh start
 
 ```
