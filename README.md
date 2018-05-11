@@ -376,8 +376,7 @@ esac
 
 #### Script httphello.service
 
-O arquivo deve ser colocado dentro de **/etc/systemd/system/** (preferencialmente) ou **/usr/lib/systemd/system/** e ter a extensão **.service**, seu formato é:
-
+O arquivo deve ser colocado dentro de **/etc/systemd/system/** (preferencialmente) ou **/lib/systemd/system/** e ter a extensão **.service**, seu formato é:
 
 #### httphello.service
 
@@ -642,7 +641,7 @@ Usando o padrão Lsb para rodarmos com systemctl foi desenvolvido um script para
 
  - Copiamos nosso script httphello.sh para **/etc/init.d/**
  
- - Copiamos nosso script **httphello.service** para **/etc/systemd/system** (preferencialmente) ou **/usr/lib/systemd/system/**
+ - Copiamos nosso script **httphello.service** para **/etc/systemd/system** (preferencialmente) ou **/lib/systemd/system/**
 
  - Copiamos nosso Daemon compilado **httphello** para **/usr/bin**
 
