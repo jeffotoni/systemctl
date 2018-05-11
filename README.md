@@ -200,7 +200,7 @@ Temos que criar nosso script para controlar todas as etapas de **start|stop|rest
 
 Vamos criar nosso script para gerenciar os eventos: **start|stop|restart|reload|status** não esqueça de coloca-lo em **/etc/init.d/**, **chmod +x httphello**
 
-É possível colocar o script diretamente no diretório **/etc/init.d**. Para criar o link simbólico de modo a permitir a execução na inicialização para isto temos que rodar o seguinte comando **“sudo update-rc.d httphello defaults**, caso queira removê-lo, utilize **remove** em vez de **defaults**.
+É possível colocar o script diretamente no diretório **/etc/init.d**. Para criar o link simbólico de modo a permitir a execução na inicialização para isto temos que rodar o seguinte comando **“sudo update-rc.d httphello defaults**, caso queira removê-lo, utilize **remove** em vez de **defaults**. Mais detalhes do boot do linux clique aqui [Boot linux](https://www.thegeekstuff.com/2011/02/linux-boot-process/)
 
 Um script LSB (Linux Standard Base) Init tem como principal finalidade a execução de comandos na inicialização do sistema operacional seguindo uma padronização. Para isso, ele deve ter suporte para as seguintes ações: **start|stop|restart|reload|status**. 
 
@@ -223,6 +223,7 @@ Confira as funções que ficam comentadas no inicio do script são como annotati
 
  - Description:			apresentam a descrição do serviço.
 
+Mais detalhes das funções de script confere aqui: [LSB Ini Script](http://refspecs.linuxbase.org/LSB_3.1.0/LSB-Core-generic/LSB-Core-generic/iniscrptfunc.html)
 
 ```sh
 #!/bin/bash
@@ -488,5 +489,17 @@ func main() {
 $ curl -vX POST \
 	localhost:9999/hello \
 	-d "name=jefferson"
+
+```
+
+### Crontab como Serviço
+
+O serviço de agendamento de tarefas do Linux também pode ser usado para iniciar um script na inicialização. 
+
+Através do comando “crontab -e” conseguiremos editar nosso crontab.
+
+```sh
+
+@reboot cd /usr/bin/ && httphello > /tmp/httphello.log 2>&1
 
 ```
