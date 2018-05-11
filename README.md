@@ -190,7 +190,7 @@ $ sudo systemctl list-unit-files
 ```
 ### Criando e organizando nossos scripts e Daemon.
 
-#### Programa um script bash no /etc/init.d
+#### Script httphello.sh
 
 O arquivo do exemplo a seguir deve ser colocado dentro de **/etc/init.d/**.
 
@@ -372,7 +372,7 @@ esac
 
 ```
 
-#### Programa dois é um script bash service
+#### Script httphello.service
 
 O arquivo deve ser colocado dentro de **/etc/systemd/system/** (preferencialmente) ou **/usr/lib/systemd/system/** e ter a extensão **.service**, seu formato é:
 
@@ -465,7 +465,7 @@ sudo systemctl enable httphello.service
 - snapshot: similar a unidade target, a unidade snapshot não faz nada por si so a não ser referenciar outras unidades.
 
 
-#### Programa três é o nosso Daemon
+#### Daemon httphello
 
 Nosso terceiro programa é o Daemon, será responsável por ficar escutando em uma porta 8080 e receberá uma solicitação POST como exemplo abaixo:
 
