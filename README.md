@@ -190,7 +190,7 @@ $ sudo systemctl list-unit-files
 ```
 ### Criando e organizando nossos scripts e Daemon.
 
-#### Programa 1 / Será um script bash
+#### Programa um script bash no /etc/init.d
 
 O arquivo do exemplo a seguir deve ser colocado dentro de **/etc/init.d/**.
 
@@ -372,7 +372,7 @@ esac
 
 ```
 
-#### Programa 2 / Será um script bash service
+#### Programa dois é um script bash service
 
 O arquivo deve ser colocado dentro de **/etc/systemd/system/** (preferencialmente) ou **/usr/lib/systemd/system/** e ter a extensão **.service**, seu formato é:
 
@@ -438,30 +438,38 @@ ExecStop=/bin/kill -TERM $MAINPID
 WantedBy=multi-user.target
 
 ```
+Logo após copia-lo habilite ele para que na inicialização possa executa-lo, use o comando abaixo:
+
+```sh
+
+sudo systemctl enable httphello.service
+
+```
+
 ### Systemd (systemctl)
 
 É baseado na notação de sete tipos diferentes de unidades (ou units), cujo nome é composto de uma identificação e o seu tipo como sufixo (se não for especificado, o systemctl assumirá .service):
 
- - service – daemons que podem ser iniciados, parados, reiniciados e recarregados.
+ - service: daemons que podem ser iniciados, parados, reiniciados e recarregados.
 
-- socket – encapsula um socket no sistema de arquivos ou na Internet; sockets são programas responsaveis pela comunicação ou interligação de outros programas que atuam na camada de transporte, como os “Stream Sockets” (usado no telnet) e os “Datagram Sockets” (usam UDP em vez de TCP).
+- socket: encapsula um socket no sistema de arquivos ou na Internet; sockets são programas responsaveis pela comunicação ou interligação de outros programas que atuam na camada de transporte, como os “Stream Sockets” (usado no telnet) e os “Datagram Sockets” (usam UDP em vez de TCP).
 
-- device – encapsula um dispositivo na árvore de dispositivos do Linux; se é marcado através de regras no udev, ele será exposto a um dispositivo de unidade no systemd.
+- device: encapsula um dispositivo na árvore de dispositivos do Linux; se é marcado através de regras no udev, ele será exposto a um dispositivo de unidade no systemd.
 
-- mount – encapsula um ponto de montagem na hierarquia do sistema de arquivos.
+- mount: encapsula um ponto de montagem na hierarquia do sistema de arquivos.
 
-- automount – encapsula um ponto de montagem automático na hierarquia do sistema de arquivos; cada unidade automount, tem uma unidade mount correspondente, que é iniciada(montada) assim que o diretório automount é acessado.
+- automount: encapsula um ponto de montagem automático na hierarquia do sistema de arquivos; cada unidade automount, tem uma unidade mount correspondente, que é iniciada(montada) assim que o diretório automount é acessado.
 
-- target – usada para agrupamento lógico de unidades, referenciando outras unidades que podem ser controladas então de forma conjunta (por exemplo, “multi-user.target” é uma unidade que basicamente equivale a regra do run-level 5 no clássico SysV).
+- target: usada para agrupamento lógico de unidades, referenciando outras unidades que podem ser controladas então de forma conjunta (por exemplo, “multi-user.target” é uma unidade que basicamente equivale a regra do run-level 5 no clássico SysV).
 
-- snapshot – similar a unidade target, a unidade snapshot não faz nada por si so a não ser referenciar outras unidades.
+- snapshot: similar a unidade target, a unidade snapshot não faz nada por si so a não ser referenciar outras unidades.
 
 
-#### Programa 3 / Será nosso Daemon
+#### Programa três é o nosso Daemon
 
 Nosso terceiro programa é o Daemon, será responsável por ficar escutando em uma porta 8080 e receberá uma solicitação POST como exemplo abaixo:
 
-O httphello.go é nosso Daemon, iremos compilar e disponibilizar como um serviço, toda vez que iniciarmos nosso sistema operacional ele será iniciado e mantido como serviço pelo Linux.
+O **httphello.go** é nosso Daemon, iremos compilar e disponibilizar como um serviço, toda vez que iniciarmos nosso sistema operacional ele será iniciado e mantido como serviço pelo Linux.
 
 O Go tem que está instalado em sua máquina caso contrário visite este link [golang download](https://golang.org/dl/)
 
@@ -513,7 +521,7 @@ $ curl -vX GET \
 
 ```
 
-### Crontab como Serviço
+### Crontab como Serviço de inicialização
 
 O serviço de agendamento de tarefas do Linux também pode ser usado para iniciar um script na inicialização. 
 
@@ -631,7 +639,9 @@ Usando o padrão Lsb para rodarmos com systemctl foi desenvolvido um script para
 
  - Copiamos nosso Daemon compilado **httphello** para **/usr/bin**
 
- E agora é inicializar a máquina e conferir se o serviço está rodando.
+ - Habilitando nosso serviço usando **sudo systemctl enable httphello.service**
+
+E agora é inicializar a máquina e conferir se o serviço está rodando.
 
 Conferindo o serviço:
 
