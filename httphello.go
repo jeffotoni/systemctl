@@ -57,11 +57,17 @@ func Hello(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// nossa funcao
+// principal
 func main() {
 
-	//curl -X POST localhost:9999/hello -d "name=jefferson"
+	// show msg
 	fmt.Println("Iniciando Hello...")
+
+	// declarando nosso endpoint
 	http.HandleFunc("/hello", Hello)
 
+	// apresentando um log na saida caso
+	// ocorra algo de errado
 	log.Fatal(http.ListenAndServe(":"+PORT, nil))
 }

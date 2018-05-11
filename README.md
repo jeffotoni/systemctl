@@ -196,12 +196,43 @@ O arquivo do exemplo a seguir deve ser colocado dentro de **/etc/init.d/**.
 
 Temos que criar nosso script para controlar todas as etapas de **start|stop|restart|reload|status** do nosso programa que será executado, iremos chama-lo de httphello.sh que irá ser responsável por gerenciar nosso executável que irá ser inicializado no boot do sistema. Para ficar mais bacana iremos renomer **httphello.sh** para **httphello**
 
-#### httphello.sh
+#### System V (SysV ou sysvinit)
 
-Vamos criar nosso script para start|stop|restart|reload|status em nosso Daemon
+Vamos criar nosso script para gerenciar os eventos: **start|stop|restart|reload|status** não esqueça de coloca-lo em **/etc/init.d/**, **chmod +x httphello**
+
+É possível colocar o script diretamente no diretório **/etc/init.d**. Para criar o link simbólico de modo a permitir a execução na inicialização para isto temos que rodar o seguinte comando **“sudo update-rc.d httphello defaults**, caso queira removê-lo, utilize **remove** em vez de **defaults**.
+
+Um script LSB (Linux Standard Base) Init tem como principal finalidade a execução de comandos na inicialização do sistema operacional seguindo uma padronização. Para isso, ele deve ter suporte para as seguintes ações: **start|stop|restart|reload|status**. 
+
+Deverá ter saída de erros apropriada e ter as **run-time dependencies**: um cabeçalho padrão no início do script com as informações necessárias ao seu funcionamento.
+
+Confira as funções que ficam comentadas no inicio do script são como annotations.
+
+ - Provides:	 		especifica qual é a facility executada por este script Init (o nome deve ser único).
+
+ - Required-start: 		especifica o conjunto de facilities que deve ser iniciado antes de começar este serviço. 
+ 						Existem alguns nomes todos iniciados por $: $local_fs, $remote_fs, $network, $named, $portmap, $syslog, $time e $all.
+
+ - Required-Stop: 		especifica a lista de facilities que devem ser paradas depois de parar esta facility.
+
+ - Default-Start:  		definem os níveis de execução ex: 2 3 4 5 em que o serviço deve ser iniciado.
+ 
+ - Default-Stop: 		definem os níveis de execução ex: 0 1 6 em que o serviço deve ser parado.
+
+ - Short-Description: 	apresentam a descrição do serviço.
+
+ - Description:			apresentam a descrição do serviço.
+
 
 ```sh
 #!/bin/bash
+# Exemplo de script para inicializar no boot do linux
+# Usando Systemctl 
+# Este script tem que está em: /etc/init.d
+# 
+# @package     httphello
+# @author      @jeffotoni
+# @size        05/2018
 
 ### BEGIN INIT INFO
 # Provides:          httphello
@@ -212,11 +243,137 @@ Vamos criar nosso script para start|stop|restart|reload|status em nosso Daemon
 # Short-Description: Start daemon at boot time
 # Description:       Enable service provided by daemon.
 ### END INIT INFO
+
+echo "#######################"
+echo "    httphello     "
+echo "#######################"
+
+# Usando as funções lsb para executar as operações.
+. /lib/lsb/init-functions
+
+# Nome processo
+NAME=httphello
+
+# Nome do daemon onde irá executar
+DAEMON=/usr/bin/httphello
+
+# pid do arquivo para o daemon
+PIDFILE=/var/run/httphello.pid
+
+# Se o daemon não estiver lá, saia.
+test -x $DAEMON || exit 5
+
+# funcao start
+d_start () 
+{ 
+
+    # Verificado o arquivo PID existe e verificar o status atual do processo
+    if [ -e $PIDFILE ]; then
+       status_of_proc -p $PIDFILE $DAEMON "$NAME process" && status="0" || status="$?"
+       
+       # Se o status for SUCESSO, não será necessário iniciar novamente.
+       if [ $status = "0" ]; then
+          exit # Exit
+       fi
+    fi
+    
+    # Start o daemon.
+    log_daemon_msg "Starting the process" "$NAME"
+
+    # Inicie o daemon com a ajuda de start-stop-daemon
+	# Registre a mensagem apropriadamente
+    if start-stop-daemon --start --quiet --oknodo --pidfile $PIDFILE --exec $DAEMON ; then
+       log_end_msg 0
+    else
+       log_end_msg 1
+    fi
+}
+
+# funcao stop
+d_stop ()  
+{ 
+     # Verificado o arquivo PID existe
+     if [ -e $PIDFILE ]; then
+        status_of_proc -p $PIDFILE $DAEMON "Stoppping the $NAME process" && status="0" || status="$?"
+     if [ "$status" = 0 ]; then
+        start-stop-daemon --stop --quiet --oknodo --pidfile $PIDFILE
+        /bin/rm -rf $PIDFILE
+     fi
+     else
+       log_daemon_msg "$NAME process is not running"
+       log_end_msg 0
+     fi
+ }
+
+#funcao status
+ d_status ()
+ {	
+ 	# Verificado o arquivo PID existe
+    if [ -e $PIDFILE ]; then
+     status_of_proc -p $PIDFILE $DAEMON "$NAME process" && exit 0 || exit $?
+    else
+      log_daemon_msg "$NAME Process is not running"
+      log_end_msg 0
+    fi
+
+    #ps  -ef  |  grep httphello | grep  -v  grep
+    #echo  "PID indicate indication file" 
+}
+
+# funcao restart
+d_restart ()
+{
+  # Restart o daemon.
+  $0 stop && sleep 2 && $0 start
+}
+
+# reload
+d_reload ()
+{
+    # Recarregue o processo. 
+    # Basicamente enviando algum sinal 
+    # para um daemon para recarregar
+	# configurações.
+    if [ -e $PIDFILE ]; then
+      start-stop-daemon --stop --signal USR1 --quiet --pidfile $PIDFILE --name $NAME
+      log_success_msg "$NAME process reloaded successfully"
+    else
+      log_failure_msg "$PIDFILE does not exists"
+    fi
+}
+
+# Instruções de 
+# gerenciamento 
+# do serviço
+case  "$1"  in 
+        start)
+            d_start
+            ;; 
+
+        stop)
+            d_stop
+            ;;
+
+        restart)
+            d_restart
+            ;;
+        reload)
+            d_reload
+            ;;
+        status)
+            d_status
+            ;;
+        *)
+        echo  "Usage: $0 {start|stop|restart|reload|status}"
+        exit 1 
+        ;; 
+esac
+
 ```
 
 #### Programa 2 / Será um script bash service
 
-O arquivo do exemplo a seguir deve ser colocado dentro de **/etc/systemd/system/** (preferencialmente) ou **/usr/lib/systemd/system/** e ter a extensão .service, com o seguinte formato:
+O arquivo deve ser colocado dentro de **/etc/systemd/system/** (preferencialmente) ou **/usr/lib/systemd/system/** e ter a extensão **.service**, seu formato é:
 
 ```sh
 
@@ -228,28 +385,103 @@ Description=httphello
 After=multi-user.target
 
 [Service]
+
+# Se for apenas um processo 
+# use Type simple; 
+# caso ele gere subprocessos 
+# use forking
 Type=forking
+
+# Caso use forking, 
+# convém guardar o número pid 
+# do processo pai para o systemd 
+# fazer o monitoramento
 PIDFile=/var/run/httphello.pid
-#Type=simple
+
+# inicia o processo aqui
+# (caso use forking) 
 ExecStart=/etc/init.d/httphello start
+
+# usuario
+# que irá
+# executar
 User=root
+
+# diretorio 
 WorkingDirectory=/etc/init.d
+
 #Restart=no
 Restart=always
+
+# tempo para
+# restart do 
+# serviço
 RestartSec=1s
+
+# mantendo os logs no 
+# syslog
 StandardOutput=syslog
+
+# logs de errros
 StandardError=inherit
+
+# Comando que para o serviço 
+# (o próprio Systemd 
+# se encarrega de acompanhar 
+# o PID do serviço)
 ExecStop=/bin/kill -TERM $MAINPID
 
 [Install]
+
+#Necessário para instalação do serviço
 WantedBy=multi-user.target
 
 ```
+### Systemd (systemctl)
+
+É baseado na notação de sete tipos diferentes de unidades (ou units), cujo nome é composto de uma identificação e o seu tipo como sufixo (se não for especificado, o systemctl assumirá .service):
+
+ - service – daemons que podem ser iniciados, parados, reiniciados e recarregados.
+
+- socket – encapsula um socket no sistema de arquivos ou na Internet; sockets são programas responsaveis pela comunicação ou interligação de outros programas que atuam na camada de transporte, como os “Stream Sockets” (usado no telnet) e os “Datagram Sockets” (usam UDP em vez de TCP).
+
+- device – encapsula um dispositivo na árvore de dispositivos do Linux; se é marcado através de regras no udev, ele será exposto a um dispositivo de unidade no systemd.
+
+- mount – encapsula um ponto de montagem na hierarquia do sistema de arquivos.
+
+- automount – encapsula um ponto de montagem automático na hierarquia do sistema de arquivos; cada unidade automount, tem uma unidade mount correspondente, que é iniciada(montada) assim que o diretório automount é acessado.
+
+- target – usada para agrupamento lógico de unidades, referenciando outras unidades que podem ser controladas então de forma conjunta (por exemplo, “multi-user.target” é uma unidade que basicamente equivale a regra do run-level 5 no clássico SysV).
+
+- snapshot – similar a unidade target, a unidade snapshot não faz nada por si so a não ser referenciar outras unidades.
 
 
 #### Programa 3 / Será nosso Daemon
 
-Nosso segundo programa é o Daemon, será responsável por ficar escutando em uma porta 8080 e receberá uma solicitação POST como exemplo abaixo:
+Nosso terceiro programa é o Daemon, será responsável por ficar escutando em uma porta 8080 e receberá uma solicitação POST como exemplo abaixo:
+
+O httphello.go é nosso Daemon, iremos compilar e disponibilizar como um serviço, toda vez que iniciarmos nosso sistema operacional ele será iniciado e mantido como serviço pelo Linux.
+
+
+```go
+
+// nossa funcao
+// principal
+func main() {
+
+	// show msg
+	fmt.Println("Iniciando Hello...")
+
+	// declarando nosso endpoint
+	http.HandleFunc("/hello", Hello)
+
+	// apresentando um log na saida caso
+	// ocorra algo de errado
+	log.Fatal(http.ListenAndServe(":"+PORT, nil))
+}
+
+```
+### Um Client para testar nosso serviço
 
 ```sh
 
@@ -258,5 +490,3 @@ $ curl -vX POST \
 	-d "name=jefferson"
 
 ```
-
-Utilizamos a linguagem Go, é o httphello.go, iremos compilado e ele será nosso Daemon.
