@@ -627,9 +627,38 @@ Usando o padrão Lsb para rodarmos com systemctl foi desenvolvido um script para
 
  - Copiamos nosso script httphello.sh para **/etc/init.d/**
  
- - Copiamos também nosso script httphello.service para **/etc/systemd/system** (preferencialmente) ou **/usr/lib/systemd/system/**
+ - Copiamos nosso script **httphello.service** para **/etc/systemd/system** (preferencialmente) ou **/usr/lib/systemd/system/**
 
- - Copiamos nosso Daemon compilado httphello para **/usr/bin**
+ - Copiamos nosso Daemon compilado **httphello** para **/usr/bin**
 
- E agora é inicializar a máquina para vermos o que acontece.
+ E agora é inicializar a máquina e conferir se o serviço está rodando.
 
+Conferindo o serviço:
+
+```sh
+
+$ sudo systemctl status httphello
+
+$ sudo systemctl is-active httphello
+
+$ sudo systemctl is-enabled httphello
+
+```
+
+Caso desejar parar o serviço e inicializa-lo podemos usar:
+
+```sh
+
+$ sudo systemctl stop httphello
+
+$ sudo systemctl start httphello
+
+```
+
+Uma outra forma de visualizar o processo rodando é o noss velho e amigo **ps**
+
+```sh
+
+$ ps aux | grep httphello
+
+```
