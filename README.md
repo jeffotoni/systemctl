@@ -722,4 +722,6 @@ $ sh /etc/init.d/cron-httphello.sh start
 ### Cuidado quando usar Crontab
 
 A desvantagem deste cenário é que seu Daemon usar algum serviço como o redis, postgresql, apache, nginx etc, seu script será executando antes de todos eles a ordem de execução será do crontab, ou seja você não tem controle sobre a ordem de inicialização do seu Daemon, o crontab irá executar antes dos serviços.
+
 Você teria que criar um sleep em sua Daemon para aguardar um pouco antes de tentar iniciar o serviço para dar tempo os outros subirem, para alguns cenários isto não fica muito elegante o ideal é usar o padrão Lsb como descrevemos acima.
+
